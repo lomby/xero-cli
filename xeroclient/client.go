@@ -27,6 +27,7 @@ func NewRequest(method string, url string, body io.Reader) (response string, sta
 		fmt.Println(err)
 	}
 
+	// Add the xero-tenant-id to all requests - required by Xero
 	request.Header.Add("xero-tenant-id", os.Getenv("UK_TENANT_ID"))
 
 	resp, err := client.Do(request)
@@ -51,6 +52,7 @@ func NewRequest(method string, url string, body io.Reader) (response string, sta
 
 }
 
+// GetTenants fetches all the account tennants that we have access to
 func GetTenants(res http.ResponseWriter, req *http.Request) {
 
 	r, code, err := NewRequest("GET", "https://api.xero.com/connections", nil)
