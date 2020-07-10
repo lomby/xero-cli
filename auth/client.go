@@ -13,18 +13,9 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type credentials struct {
-	AccessToken  string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
-	TokenType    string    `json:"token_type"`
-	ExpiresAt    time.Time `json:"expires_at"`
-}
-
 type Provider struct {
-
-Config *oauth2.Config
-Ctx context.Context
-
+	Config *oauth2.Config
+	Ctx    context.Context
 }
 
 func NewProvider() *Provider {
@@ -35,7 +26,7 @@ func NewProvider() *Provider {
 	}
 
 	return &Provider{
-			Config: &oauth2.Config{
+		Config: &oauth2.Config{
 			ClientID:     os.Getenv("XERO_KEY"),
 			ClientSecret: os.Getenv("XERO_SECRET"),
 			Endpoint:     endpoint,
@@ -49,7 +40,7 @@ func NewProvider() *Provider {
 
 func (p *Provider) HandleCallback(res http.ResponseWriter, req *http.Request) {
 
-
+	// Fetch the code returned from Xero auth
 	code := req.FormValue("code")
 	token, err := p.Config.Exchange(p.Ctx, code)
 
@@ -57,15 +48,63 @@ func (p *Provider) HandleCallback(res http.ResponseWriter, req *http.Request) {
 		fmt.Println(err)
 	}
 
-	fmt.Println(token)
-
-	file, _ := json.MarshalIndent(token, "", " ")
-
-	_ = ioutil.WriteFile("credentials.json", file, 0644)
+	// Save our initial token to credentials.json
+	storeToken(*token)
 }
 
 func (p *Provider) GetAuthURL() {
 
+	// Fetch the Xero Auth URL to manually auth with user login in browser
 	authURL := p.Config.AuthCodeURL("UNIQUE_STATE_STRING")
 	fmt.Println(authURL)
+}
+
+func (p *Provider) GetToken() oauth2.Token {
+
+	tokenFile, err := ioutil.ReadFile("credentials.json")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	var token oauth2.Token
+	json.Unmarshal(tokenFile, &token)
+
+	if token.Expiry.Before(time.Now()) {
+		token = p.refreshToken(token)
+	}
+
+	return token
+
+}
+
+func (p *Provider) refreshToken(token oauth2.Token) oauth2.Token {
+
+	tokenSource := p.Config.TokenSource(p.Ctx, &token)
+	newToken, err := tokenSource.Token()
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if newToken.AccessToken != token.AccessToken {
+		token = *newToken
+		storeToken(token)
+	}
+
+	return token
+}
+
+func storeToken(token oauth2.Token) {
+	file, err := json.MarshalIndent(token, "", " ")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = ioutil.WriteFile("credentials.json", file, 0644)
+
+	if err != nil {
+		fmt.Println(err)
+	}
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,7 +11,6 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
 	"github.com/lomby/xero-cli/auth"
-	"golang.org/x/oauth2"
 )
 
 func main() {
@@ -52,17 +50,9 @@ func main() {
 func getTenants(res http.ResponseWriter, req *http.Request) {
 
 	provider := auth.NewProvider()
+	token := provider.GetToken()
 
-	js, err := ioutil.ReadFile("credentials.json")
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	var credentials oauth2.Token
-	json.Unmarshal(js, &credentials)
-
-	client := provider.Config.Client(provider.Ctx, &credentials)
+	client := provider.Config.Client(provider.Ctx, &token)
 
 	resp, err := client.Get("https://api.xero.com/connections")
 
@@ -87,20 +77,17 @@ func getInvoice(res http.ResponseWriter, req *http.Request) {
 
 	invoiceID := req.FormValue("id")
 
-	provider := auth.NewProvider()
-
-	js, err := ioutil.ReadFile("credentials.json")
-
-	if err != nil {
-		fmt.Println(err)
+	if invoiceID == "" {
+		fmt.Println("Invoice ID not provided")
+		return
 	}
 
-	var credentials oauth2.Token
-	json.Unmarshal(js, &credentials)
+	provider := auth.NewProvider()
+	token := provider.GetToken()
 
-	client := provider.Config.Client(provider.Ctx, &credentials)
+	client := provider.Config.Client(provider.Ctx, &token)
 
-	request, err := http.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices/" + invoiceID, nil)
+	request, err := http.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices/"+invoiceID, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
