@@ -7,6 +7,7 @@ import (
 	"github.com/lomby/xero-cli/xeroclient"
 )
 
+// GetInvoice fetches a single invoice when provided with a Xero InvoiceID
 func GetInvoice(res http.ResponseWriter, req *http.Request) {
 
 	invoiceID := req.FormValue("id")
