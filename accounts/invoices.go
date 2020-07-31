@@ -1,19 +1,26 @@
 package accounts
 
 import (
+	"bytes"
 	"errors"
 
 	"github.com/lomby/xero-cli/xeroclient"
 )
 
 // GetInvoice fetches a single invoice when provided with a Xero InvoiceID
-func GetInvoice(invoiceID string) (string, error) {
+func GetInvoice(invoiceID string, pdf bool) (string, error) {
 
 	if invoiceID == "" {
 		return "", errors.New("Invoice ID not provided")
 	}
 
-	r, code, err := xeroclient.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices/"+invoiceID, nil)
+	var headers = make(map[string]string)
+
+	if pdf {
+		headers["Accept"] = "application/pdf"
+	}
+
+	r, code, err := xeroclient.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices/"+invoiceID, nil, headers)
 
 	if err != nil || code != 200 {
 		return "", err
@@ -29,7 +36,23 @@ func GetInvoices(contactID string) (string, error) {
 		return "", errors.New("Contact ID not provided")
 	}
 
-	r, code, err := xeroclient.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices?ContactIDs="+contactID, nil)
+	r, code, err := xeroclient.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices?ContactIDs="+contactID, nil, nil)
+
+	if err != nil || code != 200 {
+		return "", err
+	}
+
+	return r, nil
+}
+
+// GetInvoices fetches a all invoices when provided with a CustomerID
+func CreateInvoice(invoiceData string) (string, error) {
+
+	if invoiceData == "" {
+		return "", errors.New("Invoice data not provided")
+	}
+
+	r, code, err := xeroclient.NewRequest("POST", "https://api.xero.com/api.xro/2.0/Invoices", bytes.NewBuffer([]byte(invoiceData)), nil)
 
 	if err != nil || code != 200 {
 		return "", err
@@ -45,7 +68,7 @@ func GetInvoiceLink(invoiceID string) (string, error) {
 		return "", errors.New("Invoice ID not provided")
 	}
 
-	r, code, err := xeroclient.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices/"+invoiceID+"/OnlineInvoice", nil)
+	r, code, err := xeroclient.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices/"+invoiceID+"/OnlineInvoice", nil, nil)
 
 	if err != nil || code != 200 {
 		return "", err

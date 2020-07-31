@@ -36,6 +36,8 @@ func main() {
 
 	var contactID string
 	var invoiceID string
+	var invoiceData string
+	var pdf bool
 
 	contactIDFlag := &cli.StringFlag{
 		Name:        "contactId",
@@ -48,6 +50,18 @@ func main() {
 		Usage:       "Sets the invoice id",
 		Destination: &invoiceID,
 		Required:    true,
+	}
+	invoiceDataFlag := &cli.StringFlag{
+		Name:        "invoiceData",
+		Usage:       "Invoice Json Data",
+		Destination: &invoiceData,
+		Required:    true,
+	}
+	pdfFlag := &cli.BoolFlag{
+		Name:        "pdf",
+		Usage:       "Invoice Json Data",
+		Destination: &pdf,
+		Required:    false,
 	}
 
 	// Commands and Subcommands
@@ -64,9 +78,9 @@ func main() {
 					Usage:       "invoice single --invoiceId *****",
 					Description: "retrieve a single invoice by providing an invoice ID",
 					Category:    "invoice",
-					Flags:       []cli.Flag{invoiceIDFlag},
+					Flags:       []cli.Flag{invoiceIDFlag, pdfFlag},
 					Action: func(c *cli.Context) error {
-						invoice, err := accounts.GetInvoice(invoiceID)
+						invoice, err := accounts.GetInvoice(invoiceID, pdf)
 						if err != nil {
 							return err
 						}
@@ -86,6 +100,36 @@ func main() {
 							fmt.Println(err)
 						}
 						fmt.Println(invoices)
+						return nil
+					},
+				},
+				{
+					Name:        "create",
+					Usage:       "invoice create --invoiceData *****",
+					Description: "Creates a new invoice using invoice json data",
+					Category:    "invoice",
+					Flags:       []cli.Flag{invoiceDataFlag},
+					Action: func(c *cli.Context) error {
+						invoice, err := accounts.CreateInvoice(invoiceData)
+						if err != nil {
+							fmt.Println(err)
+						}
+						fmt.Println(invoice)
+						return nil
+					},
+				},
+				{
+					Name:        "update",
+					Usage:       "invoice update --invoiceData *****",
+					Description: "Updates an existing invoice using invoice json data",
+					Category:    "invoice",
+					Flags:       []cli.Flag{invoiceDataFlag},
+					Action: func(c *cli.Context) error {
+						invoice, err := accounts.CreateInvoice(invoiceData)
+						if err != nil {
+							fmt.Println(err)
+						}
+						fmt.Println(invoice)
 						return nil
 					},
 				},
