@@ -1,29 +1,78 @@
 package accounts
 
 import (
-	"fmt"
-	"net/http"
+	"bytes"
+	"errors"
 
 	"github.com/lomby/xero-cli/xeroclient"
 )
 
 // GetInvoice fetches a single invoice when provided with a Xero InvoiceID
-func GetInvoice(res http.ResponseWriter, req *http.Request) {
-
-	invoiceID := req.FormValue("id")
+func GetInvoice(invoiceID string, pdf bool) (string, error) {
 
 	if invoiceID == "" {
-		fmt.Println("Invoice ID not provided")
-		return
+		return "", errors.New("Invoice ID not provided")
 	}
 
-	r, code, err := xeroclient.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices/"+invoiceID, nil)
+	var headers = make(map[string]string)
+
+	if pdf {
+		headers["Accept"] = "application/pdf"
+	}
+
+	r, code, err := xeroclient.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices/"+invoiceID, nil, headers)
 
 	if err != nil || code != 200 {
-		fmt.Println(code, err, r)
-		return
+		return "", err
 	}
 
-	fmt.Println(code, r)
-	return
+	return r, nil
+}
+
+// GetInvoices fetches a all invoices when provided with a CustomerID
+func GetInvoices(contactID string) (string, error) {
+
+	if contactID == "" {
+		return "", errors.New("Contact ID not provided")
+	}
+
+	r, code, err := xeroclient.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices?ContactIDs="+contactID, nil, nil)
+
+	if err != nil || code != 200 {
+		return "", err
+	}
+
+	return r, nil
+}
+
+// GetInvoices fetches a all invoices when provided with a CustomerID
+func CreateInvoice(invoiceData string) (string, error) {
+
+	if invoiceData == "" {
+		return "", errors.New("Invoice data not provided")
+	}
+
+	r, code, err := xeroclient.NewRequest("POST", "https://api.xero.com/api.xro/2.0/Invoices", bytes.NewBuffer([]byte(invoiceData)), nil)
+
+	if err != nil || code != 200 {
+		return "", err
+	}
+
+	return r, nil
+}
+
+// GetInvoiceLink fetches the online url for an invoice using the invoice id
+func GetInvoiceLink(invoiceID string) (string, error) {
+
+	if invoiceID == "" {
+		return "", errors.New("Invoice ID not provided")
+	}
+
+	r, code, err := xeroclient.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices/"+invoiceID+"/OnlineInvoice", nil, nil)
+
+	if err != nil || code != 200 {
+		return "", err
+	}
+
+	return r, nil
 }

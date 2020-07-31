@@ -15,7 +15,7 @@ import (
 // Accepts same arguments as http.NewRequest
 //
 // Returns repsonse body as string
-func NewRequest(method string, url string, body io.Reader) (response string, statusCode int, err error) {
+func NewRequest(method string, url string, body io.Reader, headers map[string]string) (response string, statusCode int, err error) {
 
 	provider := auth.NewProvider()
 	token := provider.GetToken()
@@ -29,6 +29,13 @@ func NewRequest(method string, url string, body io.Reader) (response string, sta
 
 	// Add the xero-tenant-id to all requests - required by Xero
 	request.Header.Add("xero-tenant-id", os.Getenv("UK_TENANT_ID"))
+
+	// Add in custom headers if supplied
+	if headers != nil {
+		for header, value := range headers {
+			request.Header.Add(header, value)
+		}
+	}
 
 	resp, err := client.Do(request)
 
@@ -55,7 +62,7 @@ func NewRequest(method string, url string, body io.Reader) (response string, sta
 // GetTenants fetches all the account tennants that we have access to
 func GetTenants(res http.ResponseWriter, req *http.Request) {
 
-	r, code, err := NewRequest("GET", "https://api.xero.com/connections", nil)
+	r, code, err := NewRequest("GET", "https://api.xero.com/connections", nil, nil)
 
 	if err != nil {
 		fmt.Println(code, err)
