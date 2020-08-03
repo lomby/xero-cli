@@ -38,6 +38,7 @@ func main() {
 	var invoiceID string
 	var invoiceData string
 	var pdf bool
+	var search string
 
 	contactIDFlag := &cli.StringFlag{
 		Name:        "contactId",
@@ -62,6 +63,12 @@ func main() {
 		Usage:       "Invoice Json Data",
 		Destination: &pdf,
 		Required:    false,
+	}
+	searchFlag := &cli.StringFlag{
+		Name:        "search",
+		Usage:       "Search Term (e.g. Name=John Doe or )",
+		Destination: &search,
+		Required:    true,
 	}
 
 	// Commands and Subcommands
@@ -145,6 +152,43 @@ func main() {
 							fmt.Println(err)
 						}
 						fmt.Println(link)
+						return nil
+					},
+				},
+			},
+		},
+		&cli.Command{
+			Name:        "contact",
+			Usage:       "Contact commands for Xero API",
+			Description: "Various contact commands over Xero API",
+			Subcommands: []*cli.Command{
+				{
+					Name:        "get",
+					Usage:       "contact get --contactId *****",
+					Description: "retrieve a single Contact by providing a contact ID",
+					Category:    "contact",
+					Flags:       []cli.Flag{contactIDFlag},
+					Action: func(c *cli.Context) error {
+						contact, err := accounts.GetContact(contactID, "")
+						if err != nil {
+							return err
+						}
+						fmt.Println(contact)
+						return nil
+					},
+				},
+				{
+					Name:        "search",
+					Usage:       "contact search --search (e.g {\"Name\": \"ABC Trading\"} )",
+					Description: "search a single Contact by providing a search key and value",
+					Category:    "contact",
+					Flags:       []cli.Flag{searchFlag},
+					Action: func(c *cli.Context) error {
+						contact, err := accounts.GetContact("", search)
+						if err != nil {
+							return err
+						}
+						fmt.Println(contact)
 						return nil
 					},
 				},
