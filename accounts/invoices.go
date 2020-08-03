@@ -52,9 +52,9 @@ func CreateInvoice(invoiceData string) (string, error) {
 		return "", errors.New("Invoice data not provided")
 	}
 
-	r, code, err := xeroclient.NewRequest("POST", "https://api.xero.com/api.xro/2.0/Invoices", bytes.NewBuffer([]byte(invoiceData)), nil)
+	r, _, err := xeroclient.NewRequest("POST", "https://api.xero.com/api.xro/2.0/Invoices", bytes.NewBuffer([]byte(invoiceData)), nil)
 
-	if err != nil || code != 200 {
+	if err != nil {
 		return "", err
 	}
 
