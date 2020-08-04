@@ -67,13 +67,13 @@ func main() {
 		Destination: &invoiceData,
 		Required:    true,
 	}
-	creditNoteDataFlag := &cli.StringFlag{
+	paymentDataFlag := &cli.StringFlag{
 		Name:        "paymentData",
 		Usage:       "Payment Json Data",
 		Destination: &paymentData,
 		Required:    true,
 	}
-	paymentDataFlag := &cli.StringFlag{
+	creditNoteDataFlag := &cli.StringFlag{
 		Name:        "creditNoteData",
 		Usage:       "Credit Note Json Data",
 		Destination: &creditNoteData,
