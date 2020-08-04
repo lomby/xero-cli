@@ -35,8 +35,10 @@ func main() {
 	appInfo()
 
 	var contactID string
+	var contactData string
 	var invoiceID string
 	var invoiceData string
+	var paymentData string
 	var pdf bool
 	var search string
 
@@ -44,6 +46,12 @@ func main() {
 		Name:        "contactId",
 		Usage:       "Sets the contact id",
 		Destination: &contactID,
+		Required:    true,
+	}
+	contactDataFlag := &cli.StringFlag{
+		Name:        "contactData",
+		Usage:       "Contact json data",
+		Destination: &contactData,
 		Required:    true,
 	}
 	invoiceIDFlag := &cli.StringFlag{
@@ -56,6 +64,12 @@ func main() {
 		Name:        "invoiceData",
 		Usage:       "Invoice Json Data",
 		Destination: &invoiceData,
+		Required:    true,
+	}
+	paymentDataFlag := &cli.StringFlag{
+		Name:        "paymentData",
+		Usage:       "Payment Json Data",
+		Destination: &paymentData,
 		Required:    true,
 	}
 	pdfFlag := &cli.BoolFlag{
@@ -105,6 +119,7 @@ func main() {
 						invoices, err := accounts.GetInvoices(contactID)
 						if err != nil {
 							fmt.Println(err)
+							return nil
 						}
 						fmt.Println(invoices)
 						return nil
@@ -112,7 +127,7 @@ func main() {
 				},
 				{
 					Name:        "create",
-					Usage:       "invoice create --invoiceData *****",
+					Usage:       "invoice create --invoiceData {}",
 					Description: "Creates a new invoice using invoice json data",
 					Category:    "invoice",
 					Flags:       []cli.Flag{invoiceDataFlag},
@@ -127,7 +142,7 @@ func main() {
 				},
 				{
 					Name:        "update",
-					Usage:       "invoice update --invoiceData *****",
+					Usage:       "invoice update --invoiceData {}",
 					Description: "Updates an existing invoice using invoice json data",
 					Category:    "invoice",
 					Flags:       []cli.Flag{invoiceDataFlag},
@@ -185,6 +200,43 @@ func main() {
 					Flags:       []cli.Flag{searchFlag},
 					Action: func(c *cli.Context) error {
 						contact, err := accounts.GetContact("", search)
+						if err != nil {
+							return err
+						}
+						fmt.Println(contact)
+						return nil
+					},
+				},
+				{
+					Name:        "update",
+					Usage:       "contact update --contactData {}",
+					Description: "Updates contact information by providing contact json data",
+					Category:    "contact",
+					Flags:       []cli.Flag{contactDataFlag},
+					Action: func(c *cli.Context) error {
+						contact, err := accounts.GetContact("", contactData)
+						if err != nil {
+							return err
+						}
+						fmt.Println(contact)
+						return nil
+					},
+				},
+			},
+		},
+		&cli.Command{
+			Name:        "payment",
+			Usage:       "Payment commands for Xero API",
+			Description: "Various contact commands over Xero API",
+			Subcommands: []*cli.Command{
+				{
+					Name:        "create",
+					Usage:       "payment create --paymentData {}",
+					Description: "Create a payment by providing payment data",
+					Category:    "payment",
+					Flags:       []cli.Flag{paymentDataFlag},
+					Action: func(c *cli.Context) error {
+						contact, err := accounts.MakePayment(paymentData)
 						if err != nil {
 							return err
 						}
