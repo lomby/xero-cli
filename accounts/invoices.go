@@ -36,9 +36,9 @@ func GetInvoices(contactID string) (string, error) {
 		return "", errors.New("Contact ID not provided")
 	}
 
-	r, code, err := xeroclient.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices?ContactIDs="+contactID, nil, nil)
+	r, _, err := xeroclient.NewRequest("GET", "https://api.xero.com/api.xro/2.0/Invoices?ContactIDs="+contactID, nil, nil)
 
-	if err != nil || code != 200 {
+	if err != nil {
 		return "", err
 	}
 
@@ -52,10 +52,15 @@ func CreateInvoice(invoiceData string) (string, error) {
 		return "", errors.New("Invoice data not provided")
 	}
 
-	r, _, err := xeroclient.NewRequest("POST", "https://api.xero.com/api.xro/2.0/Invoices", bytes.NewBuffer([]byte(invoiceData)), nil)
+	buf := bytes.NewBuffer([]byte(invoiceData))
+
+	var headers = make(map[string]string)
+	headers["Content-Type"] = "application/json"
+
+	r, _, err := xeroclient.NewRequest("POST", "https://api.xero.com/api.xro/2.0/Invoices", buf, nil)
 
 	if err != nil {
-		return "", err
+		return r, err
 	}
 
 	return r, nil
