@@ -162,7 +162,12 @@ func main() {
 						return nil
 					},
 				},
-				{
+				{	paymentDataFlag := &cli.StringFlag{
+		Name:        "paymentData",
+		Usage:       "Payment Json Data",
+		Destination: &paymentData,
+		Required:    true,
+	}
 					Name:        "link",
 					Usage:       "invoice link --invoiceId *****",
 					Description: "retrieve the online invoice link",
@@ -265,7 +270,7 @@ func main() {
 					Category:    "creditnote",
 					Flags:       []cli.Flag{creditNoteDataFlag},
 					Action: func(c *cli.Context) error {
-						contact, err := accounts.MakePayment(creditNoteData)
+						contact, err := accounts.CreateCreditNote(creditNoteData)
 						if err != nil {
 							return err
 						}
