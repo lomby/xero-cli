@@ -162,12 +162,7 @@ func main() {
 						return nil
 					},
 				},
-				{	paymentDataFlag := &cli.StringFlag{
-		Name:        "paymentData",
-		Usage:       "Payment Json Data",
-		Destination: &paymentData,
-		Required:    true,
-	}
+				{
 					Name:        "link",
 					Usage:       "invoice link --invoiceId *****",
 					Description: "retrieve the online invoice link",
