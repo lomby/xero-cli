@@ -39,6 +39,7 @@ func main() {
 	var invoiceID string
 	var invoiceData string
 	var paymentData string
+	var creditNoteData string
 	var pdf bool
 	var search string
 
@@ -66,10 +67,16 @@ func main() {
 		Destination: &invoiceData,
 		Required:    true,
 	}
-	paymentDataFlag := &cli.StringFlag{
+	creditNoteDataFlag := &cli.StringFlag{
 		Name:        "paymentData",
 		Usage:       "Payment Json Data",
 		Destination: &paymentData,
+		Required:    true,
+	}
+	paymentDataFlag := &cli.StringFlag{
+		Name:        "creditNoteData",
+		Usage:       "Credit Note Json Data",
+		Destination: &creditNoteData,
 		Required:    true,
 	}
 	pdfFlag := &cli.BoolFlag{
@@ -227,7 +234,7 @@ func main() {
 		&cli.Command{
 			Name:        "payment",
 			Usage:       "Payment commands for Xero API",
-			Description: "Various contact commands over Xero API",
+			Description: "Various payment commands over Xero API",
 			Subcommands: []*cli.Command{
 				{
 					Name:        "create",
@@ -237,6 +244,28 @@ func main() {
 					Flags:       []cli.Flag{paymentDataFlag},
 					Action: func(c *cli.Context) error {
 						contact, err := accounts.MakePayment(paymentData)
+						if err != nil {
+							return err
+						}
+						fmt.Println(contact)
+						return nil
+					},
+				},
+			},
+		},
+		&cli.Command{
+			Name:        "creditnote",
+			Usage:       "Credit Note commands for Xero API",
+			Description: "Various credit note commands over Xero API",
+			Subcommands: []*cli.Command{
+				{
+					Name:        "create",
+					Usage:       "creditnote create --creditNoteData {}",
+					Description: "Create a credit note by providing Credit note data",
+					Category:    "creditnote",
+					Flags:       []cli.Flag{creditNoteDataFlag},
+					Action: func(c *cli.Context) error {
+						contact, err := accounts.CreateCreditNote(creditNoteData)
 						if err != nil {
 							return err
 						}
